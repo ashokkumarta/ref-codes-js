@@ -10,6 +10,8 @@ const ALLOWED_ACTIONS_KEY = "allowed-actions";
 const ALLOWED_DATA_KEY = "allowed-data";
 const JTI_KEY = "jti";
 
+const AUTHZ_MODEL = 'IMPLIED'
+
 exports.validate = function(accessToken) {
 	
     try {
@@ -66,6 +68,24 @@ exports.validate = function(accessToken) {
         tokenId: function(){
             return this._jti;
         },
+        checkAccess: function(data_code, page_code, action_code){
+            perm_code = page_code + '-' + action_code;
+            if (!this._allowed_data.includes(data_code)) {
+                return false;
+            }
+            if (this._allowed_actions.includes(perm_code)) {
+                return true;
+            }
+            if (AUTHZ_MODEL === 'IMPLIED') {
+                for (var i = 0; i < this._allowed_actions.length; i++) {
+                    if (this._allowed_actions[i].startsWith(perm_code)) {
+                        return true;
+                    }
+                }
+            } 
+            return false;
+        },
+
     }
     
     return user;
